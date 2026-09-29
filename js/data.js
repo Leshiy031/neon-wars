@@ -1,0 +1,38 @@
+'use strict';
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+const els={stage:stageText,credits:creditsText,power:powerText,timer:timerText,mode:modeTag,threat:threatTag,tip:tipText,sector:sectorLabel,cards:operatorCards,upgrade:upgradeBtn,start:startBtn,fs:fullscreenBtn,modal:resultModal,resultTitle,resultReward,debrief:debriefText,retry:retryBtn,next:nextBtn,toast,operation:operationLine,dossierName,dossierClass,dossierText,protocol:protocolText};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rand=(a,b)=>a+Math.random()*(b-a),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const saveKey='neonWarsProto_v2';
+const defaultSave={stage:1,credits:600,levels:{axel:1,nova:1,bolt:1,vera:1,blade:1},formation:['axel','nova','bolt','vera','blade']};
+let save;try{save=Object.assign({},defaultSave,JSON.parse(localStorage.getItem(saveKey)||'{}'));save.levels=Object.assign({},defaultSave.levels,save.levels||{});if(!Array.isArray(save.formation)||save.formation.length!==5)save.formation=[...defaultSave.formation];}catch(e){save=JSON.parse(JSON.stringify(defaultSave));}
+const classNames={Tank:'Бастион',Mage:'Техномант',Ranger:'Стрелок',Support:'Медтех',Assassin:'Фантом',Fighter:'Штурмовик'};
+const heroDefs={
+ axel:{name:'AXEL',code:'VT-01',role:'Tank',mark:'BX',color:'#39edf5',hp:1080,atk:86,def:38,spd:.92,range:150,module:'REACTIVE WALL',protocol:'AEGIS-7',bio:'Тяжёлый оперативник VANTA. Разворачивает кинетические щиты и удерживает линию под массированным огнём.'},
+ nova:{name:'NOVA',code:'VT-04',role:'Mage',mark:'TM',color:'#b46cff',hp:650,atk:132,def:14,spd:1.02,range:430,module:'ARC CASCADE',protocol:'BLACKOUT',bio:'Техномант боевой сети. Перегружает импланты противника и превращает вражеские каналы связи в оружие.'},
+ bolt:{name:'BOLT',code:'VT-07',role:'Ranger',mark:'SR',color:'#ffd36b',hp:710,atk:116,def:18,spd:1.28,range:470,module:'TRIPLE TAP',protocol:'DEADLINE',bio:'Стрелок дальнего контура. Работает по приоритетным целям до того, как они добираются до линии контакта.'},
+ vera:{name:'VERA',code:'VT-11',role:'Support',mark:'MD',color:'#72ffb3',hp:740,atk:74,def:20,spd:1.05,range:410,module:'PATCH FIELD',protocol:'SECOND PULSE',bio:'Полевой медтех. Стабилизирует нейроинтерфейсы союзников и восстанавливает боеспособность прямо в контакте.'},
+ blade:{name:'BLADE',code:'VT-13',role:'Assassin',mark:'PH',color:'#ff4dac',hp:690,atk:145,def:15,spd:1.22,range:175,module:'PHASE CUT',protocol:'EXECUTE',bio:'Фантом ближнего контура. Проникает в тыл, вырезает ослабленные цели и исчезает до ответного огня.'}
+};
+const sectors=[
+ {name:'РЖАВЫЙ ПОЯС',op:'ОПЕРАЦИЯ «ХОЛОДНЫЙ СТАРТ»',enemy:'CHROME JACKALS',threat:'НИЗКАЯ',debrief:'Канал снабжения синдиката вскрыт. Отряд получает доступ к следующему узлу города.'},
+ {name:'УЛИЦА НУЛЬ',op:'ОПЕРАЦИЯ «СЛЕПОЙ УГОЛ»',enemy:'CHROME JACKALS',threat:'НИЗКАЯ',debrief:'Перехвачен локальный ретранслятор. Вражеская сеть потеряла часть обзора.'},
+ {name:'КРАСНЫЙ ТЕРМИНАЛ',op:'ОПЕРАЦИЯ «КРАСНАЯ ЛИНИЯ»',enemy:'NULL CELL',threat:'СРЕДНЯЯ',debrief:'Терминал изолирован. В памяти узла найден маршрут к закрытому техносектору.'},
+ {name:'ПОДСЕТЬ 13',op:'ОПЕРАЦИЯ «ТИХИЙ ПАКЕТ»',enemy:'NULL CELL',threat:'СРЕДНЯЯ',debrief:'Сигнатура вражеского ИИ зафиксирована. Источник трафика уходит глубже под город.'},
+ {name:'СТЕКЛЯННЫЙ ДОК',op:'ОПЕРАЦИЯ «ГРЯЗНЫЙ НЕОН»',enemy:'MARAUDER GRID',threat:'ВЫСОКАЯ',debrief:'Док очищен. VANTA получает временное окно для переброски тяжёлого оснащения.'},
+ {name:'КОЛЛЕКТОР K-9',op:'ОПЕРАЦИЯ «ЧЁРНЫЙ ТОК»',enemy:'MARAUDER GRID',threat:'ВЫСОКАЯ',debrief:'Энергоконтур захвачен. Следующая зона питается уже от нашего маршрута.'}
+];
+function sectorData(){const i=(save.stage-1)%sectors.length,cycle=Math.floor((save.stage-1)/sectors.length);const s={...sectors[i]};if(cycle>0)s.name+=` // ${cycle+1}`;return s;}
+let W=1280,H=720,slotsPlayer=[],slotsEnemy=[];
+function resizeCanvas(){const r=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(r.width*dpr));canvas.height=Math.max(1,Math.round(r.height*dpr));W=r.width;H=r.height;ctx.setTransform(dpr,0,0,dpr,0,0);rebuildSlots();if(state==='prep')units=[...buildPlayerUnits(),...buildEnemyUnits()];}
+function rebuildSlots(){const cy=H*.52,spread=Math.min(H*.23,120),frontPX=W*.34,backPX=W*.16,frontEX=W*.66,backEX=W*.84;slotsPlayer=[{x:frontPX,y:cy-spread*.55,front:true},{x:frontPX,y:cy+spread*.55,front:true},{x:backPX,y:cy-spread,front:false},{x:backPX,y:cy,front:false},{x:backPX,y:cy+spread,front:false}];slotsEnemy=[{x:frontEX,y:cy-spread*.55,front:true},{x:frontEX,y:cy+spread*.55,front:true},{x:backEX,y:cy-spread,front:false},{x:backEX,y:cy,front:false},{x:backEX,y:cy+spread,front:false}];}
+let state='prep',selectedHero=null,units=[],particles=[],floaters=[],battleTime=60,last=performance.now(),shake=0,resultShown=false,protocolBanner=null;
+function persist(){localStorage.setItem(saveKey,JSON.stringify(save));}
+function levelMult(id){return 1+(save.levels[id]-1)*.09;}
+function heroPower(id){const d=heroDefs[id],lv=save.levels[id];return Math.round((d.hp*.2+d.atk*3+d.def*5)*(1+(lv-1)*.09));}
+function teamPower(){return Object.keys(heroDefs).reduce((s,id)=>s+heroPower(id),0);}
+function upgradeCost(id){return 120+save.levels[id]*90;}
+function toastMsg(text){els.toast.textContent=text;els.toast.classList.add('show');clearTimeout(toastMsg.t);toastMsg.t=setTimeout(()=>els.toast.classList.remove('show'),1600);}
+function selectHero(id){if(state!=='prep')return;selectedHero=id;renderRoster();updateDossier();}
+function updateDossier(){if(!selectedHero){els.dossierName.textContent='ОТРЯД VANTA';els.dossierClass.textContent='ГОТОВ';els.dossierText.textContent='Выбери оперативника, чтобы открыть его краткое досье.';els.protocol.textContent='ПРОТОКОЛ: —';return;}const d=heroDefs[selectedHero];els.dossierName.textContent=`${d.name} // ${d.code}`;els.dossierClass.textContent=classNames[d.role].toUpperCase();els.dossierText.textContent=d.bio;els.protocol.textContent=`МОДУЛЬ: ${d.module} · ПРОТОКОЛ: ${d.protocol}`;}
+function updateHUD(){const s=sectorData();els.stage.textContent=save.stage;els.credits.textContent=Math.floor(save.credits);els.power.textContent=teamPower();els.operation.innerHTML=`${s.op} · <strong>${s.name}</strong>`;els.threat.textContent=`УГРОЗА: ${s.threat}`;els.sector.textContent=`${s.name} // ${s.enemy}`;renderRoster();updateDossier();}
+function renderRoster(){els.cards.innerHTML='';Object.entries(heroDefs).forEach(([id,d])=>{const b=document.createElement('button');b.className='operatorCard'+(selectedHero===id?' selected':'');b.innerHTML=`<div class="mark" style="color:${d.color};box-shadow:inset 0 0 14px ${d.color}22">${d.mark}</div><div class="call">${d.name} // ${d.code}</div><div class="class">${classNames[d.role]}</div><div class="meta">ДОПУСК ${save.levels[id]} · ${d.module}</div><div class="pwr">БР ${heroPower(id)}</div>`;b.addEventListener('pointerup',e=>{e.preventDefault();selectHero(id);toastMsg('Оперативник выбран. Укажи второго бойца на поле для перестановки.');});els.cards.appendChild(b);});const cost=upgradeCost(selectedHero||'axel');els.upgrade.textContent=selectedHero?`МОДИФИКАЦИЯ · ${cost}`:'МОДИФИКАЦИЯ';els.upgrade.disabled=!selectedHero||save.credits<cost||state!=='prep';}
