@@ -1,6 +1,7 @@
 'use strict';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
-const els={stage:stageText,credits:creditsText,power:powerText,timer:timerText,mode:modeTag,threat:threatTag,tip:tipText,sector:sectorLabel,cards:operatorCards,upgrade:upgradeBtn,start:startBtn,fs:fullscreenBtn,modal:resultModal,resultTitle,resultReward,debrief:debriefText,retry:retryBtn,next:nextBtn,toast,operation:operationLine,dossierName,dossierClass,dossierText,protocol:protocolText};
+const byId=id=>document.getElementById(id);
+const els={stage:byId('stageText'),credits:byId('creditsText'),power:byId('powerText'),timer:byId('timerText'),mode:byId('modeTag'),threat:byId('threatTag'),tip:byId('tipText'),sector:byId('sectorLabel'),cards:byId('operatorCards'),upgrade:byId('upgradeBtn'),start:byId('startBtn'),fs:byId('fullscreenBtn'),modal:byId('resultModal'),resultTitle:byId('resultTitle'),resultReward:byId('resultReward'),debrief:byId('debriefText'),retry:byId('retryBtn'),next:byId('nextBtn'),toast:byId('toast'),operation:byId('operationLine'),dossierName:byId('dossierName'),dossierClass:byId('dossierClass'),dossierText:byId('dossierText'),protocol:byId('protocolText')};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rand=(a,b)=>a+Math.random()*(b-a),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const saveKey='neonWarsProto_v2';
 const defaultSave={stage:1,credits:600,levels:{axel:1,nova:1,bolt:1,vera:1,blade:1},formation:['axel','nova','bolt','vera','blade']};
