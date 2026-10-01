@@ -3,20 +3,28 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<meta name="theme-color" content="#070915" />
-<title>Neon Wars — Tactical AFK Prototype</title>
-<link rel="stylesheet" href="styles.css?v=3" />
+<meta name="theme-color" content="#050711" />
+<title>Neon Wars — VANTA Combat Network</title>
+<link rel="stylesheet" href="styles.css?v=4" />
 </head>
 <body>
 <div id="app">
   <div class="topbar">
-    <div class="brand"><b>NEON WARS</b><span>TACTICAL AFK PROTOTYPE</span></div>
+    <div class="brand"><span class="vantaMark">V</span><b>NEON WARS</b><span>VANTA // COMBAT NET</span></div>
     <div class="operationLine" id="operationLine">ОПЕРАЦИЯ <strong>—</strong></div>
-    <div class="stats"><div class="pill">СЕКТОР <strong id="stageText">1</strong></div><div class="pill">КРЕДИТЫ <strong id="creditsText">0</strong></div><div class="pill">БР <strong id="powerText">0</strong></div></div>
+    <div class="stats"><div class="pill">СЕКТОР <strong id="stageText">1</strong></div><div class="pill">КРЕДИТЫ <strong id="creditsText">0</strong></div><div class="pill danger">БР <strong id="powerText">0</strong></div></div>
   </div>
   <div id="battleWrap">
     <canvas id="game"></canvas>
+    <div class="missionPanel">
+      <div class="missionKicker">ОПЕРАЦИЯ</div>
+      <b id="missionName">—</b>
+      <div class="missionEnemy">КОНТАКТ: <strong id="missionEnemy">—</strong></div>
+      <div class="objective"><i></i>Зачистить вражеский контур</div>
+      <div class="objective"><i></i>Сохранить оперативный состав</div>
+    </div>
     <div class="battleHUD"><div class="modeTag" id="modeTag">ДИСЛОКАЦИЯ</div><div class="timer" id="timerText">ГОТОВНОСТЬ</div><div class="threatTag" id="threatTag">УГРОЗА: —</div></div>
+    <div class="signalPanel"><span class="signalDot"></span>VANTA LINK <strong>100%</strong></div>
     <div class="tip"><span id="tipText">Выбери оперативника и вторую позицию — бойцы поменяются местами.</span><strong id="sectorLabel">СЕКТОР —</strong></div>
     <div class="toast" id="toast"></div>
     <div class="modal" id="resultModal"><div class="modalCard"><div class="resultKicker" id="resultKicker">ОТЧЁТ ОПЕРАЦИИ</div><div id="resultTitle" class="resultTitle">СЕКТОР ЗАЧИЩЕН</div><div class="reward" id="resultReward"></div><div class="debrief" id="debriefText"></div><div class="modalActions"><button id="retryBtn">ПОВТОРИТЬ ОПЕРАЦИЮ</button><button id="nextBtn" class="next">К СЛЕДУЮЩЕМУ СЕКТОРУ</button></div></div></div>
@@ -30,10 +38,11 @@
   </div>
 </div>
 <div id="rotate"><div class="rotateCard"><span class="phone">▯</span><b>Поверни устройство горизонтально</b><p>Командный интерфейс Neon Wars рассчитан на landscape-режим: так видно весь отряд, линию фронта и противника одновременно.</p></div></div>
-<script src="js/migrate.js?v=3"></script>
-<script src="js/data.js?v=3"></script>
-<script src="js/battle.js?v=3"></script>
-<script src="js/render.js?v=3"></script>
-<script src="js/app.js?v=3"></script>
+<script src="js/migrate.js?v=4"></script>
+<script src="js/data.js?v=4"></script>
+<script src="js/battle.js?v=4"></script>
+<script src="js/visuals.js?v=4"></script>
+<script src="js/render.js?v=4"></script>
+<script src="js/app.js?v=4"></script>
 </body>
 </html>
